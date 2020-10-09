@@ -5,16 +5,18 @@ import "./Search.css";
 const Search = React.memo((props) => {
   const [enterdFilter, setEnterdFilter] = useState("");
   const { onLoadingIngredient } = props;
+  console.log({ enterdFilter });
   useEffect(() => {
     const query =
       enterdFilter.length === 0
         ? ""
-        : `?orderBy="title"&queryTo="${enterdFilter}"`;
+        : `?orderBy="title"&equalTo="${enterdFilter}"`;
     fetch(
       "https://react-hooks-update-676a6.firebaseio.com/ingredients.json" + query
     )
       .then((response) => response.json())
       .then((responseData) => {
+        console.log({ responseData });
         const loadedIngredients = [];
         for (const key in responseData) {
           loadedIngredients.push({
@@ -23,10 +25,12 @@ const Search = React.memo((props) => {
             amount: responseData[key].amount,
           });
         }
-        // onLoadingIngredient(loadedIngredients)
+        console.log({ loadedIngredients });
+        onLoadingIngredient(loadedIngredients);
         /* setUserIngredients(loadedIngredients); */
       });
-  }, [enterdFilter]);
+  }, [enterdFilter, onLoadingIngredient]);
+
   return (
     <section className="search">
       <Card>
