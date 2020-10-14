@@ -17,12 +17,30 @@ const ingredientReducer = (currentIngredients, action) => {
       throw new Error("Should not get there!");
   }
 };
+
+const httpReducer = (curhttpState, action) => {
+  switch (action.type) {
+    case "SEND":
+      return { loading: true, error: null };
+    case "RESPONSE":
+      return { ...curhttpState, loading: false };
+    case "ERROR":
+      return { loading: false, error: action.errorMessage };
+    case "CLEAR":
+      return { ...curhttpState, error: null };
+    default:
+      throw new Error("something wrong!!!!!!!");
+  }
+};
 const Ingredients = () => {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
-
+  const [httpState, dispatchhttp] = useReducer(httpReducer, {
+    loading: false,
+    error: null,
+  });
   // const [userIngredients, setUserIngredients] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [err, setErr] = useState("");
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [err, setErr] = useState("");
   // useEffect(() => {
   //   fetch("https://react-hooks-update-676a6.firebaseio.com/ingredients.json")
   //     .then((response) => response.json())
@@ -50,14 +68,15 @@ const Ingredients = () => {
 
   console.log({ userIngredients });
   const addIngredientHandler = (ingredient) => {
-    setIsLoading(true);
+    /* setIsLoading(true); */
+    dispatchhttp({ type: "SEND" });
     fetch("https://react-hooks-update-676a6.firebaseio.com/ingredients.json", {
       method: "POST",
       body: JSON.stringify(ingredient),
       headers: { "Content-Type": "application/json" },
     })
       .then((response) => {
-        setIsLoading(false);
+        dispatchhttp({ type: "RESPONSE" });
         return response.json();
       })
       .then((responseData) => {
@@ -73,7 +92,7 @@ const Ingredients = () => {
   };
 
   const removeIngredientHandler = (ingredientId) => {
-    setIsLoading(true);
+    dispatchhttp({ type: "SET" });
     fetch(
       `https://react-hooks-update-676a6.firebaseio.com/ingredients/${ingredientId}.json`,
       {
@@ -81,26 +100,27 @@ const Ingredients = () => {
       }
     )
       .then((res) => {
-        setIsLoading(false);
+        dispatchhttp({ type: "RESPONSE" });
         /*  setUserIngredients((prevIngredients) =>
           prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
         ); */
         dispatch({ type: "DELETE", id: ingredientId });
       })
       .catch((err) => {
-        setErr("something err");
+        dispatchhttp({ type: "ERROR", errorMessage: "something wrong" });
       });
   };
   const clear = () => {
-    setErr(null);
-    setIsLoading(false);
+    dispatchhttp({ type: "CLEAR" });
   };
   return (
     <div className="App">
-      {err && <ErrorModal onClose={clear}>{err}</ErrorModal>}
+      {httpState.error && (
+        <ErrorModal onClose={clear}>{httpState.error}</ErrorModal>
+      )}
       <IngredientForm
         onAddIngredient={addIngredientHandler}
-        loading={isLoading}
+        loading={httpState.loading}
       />
 
       <section>
