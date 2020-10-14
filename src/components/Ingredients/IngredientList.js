@@ -19,7 +19,7 @@ const IngredientList = (props) => {
       </section>
     );
   } else {
-    return <p>まだ材料は追加されておりません</p>;
+    return <p>nothing</p>;
   }
 };
 

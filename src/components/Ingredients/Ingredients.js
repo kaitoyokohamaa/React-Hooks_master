@@ -19,6 +19,7 @@ const ingredientReducer = (currentIngredients, action) => {
 };
 const Ingredients = () => {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
+
   // const [userIngredients, setUserIngredients] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -42,9 +43,9 @@ const Ingredients = () => {
     console.log("RENDERING INGREDIENTS", userIngredients);
   }, [userIngredients]);
 
-  const filterIngredientsHandler = useCallback((filterIngredients) => {
+  const filterIngredientsHandler = useCallback((filteredIngredients) => {
     /*  setUserIngredients(filterIngredients); */
-    dispatch({ type: "SET", ingredient: filterIngredients });
+    dispatch({ type: "SET", ingredients: filteredIngredients });
   }, []);
 
   console.log({ userIngredients });
