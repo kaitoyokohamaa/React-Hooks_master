@@ -1,40 +1,52 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useReducer, useEffect, useCallback, useState } from "react";
 
 import IngredientForm from "./IngredientForm";
 import IngredientList from "./IngredientList";
 import Search from "./Search";
 import ErrorModal from "../UI/ErrorModal";
+
+const ingredientReducer = (currentIngredients, action) => {
+  switch (action.type) {
+    case "SET":
+      return action.ingredients;
+    case "ADD":
+      return [...currentIngredients, action.ingredient];
+    case "DELETE":
+      return currentIngredients.filter((ing) => ing.id !== action.id);
+    default:
+      throw new Error("Should not get there!");
+  }
+};
 const Ingredients = () => {
-  const [userIngredients, setUserIngredients] = useState([]);
+  const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
+
+  // const [userIngredients, setUserIngredients] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [err, setErr] = useState("");
-  useEffect(() => {
-    fetch("https://react-hooks-update-676a6.firebaseio.com/ingredients.json")
-      .then((response) => response.json())
-      .then((responseData) => {
-        const loadedIngredients = [];
-        for (const key in responseData) {
-          loadedIngredients.push({
-            id: key,
-            title: responseData[key].title,
-            amount: responseData[key].amount,
-          });
-        }
-        setUserIngredients(loadedIngredients);
-      });
-  }, []);
+  // useEffect(() => {
+  //   fetch("https://react-hooks-update-676a6.firebaseio.com/ingredients.json")
+  //     .then((response) => response.json())
+  //     .then((responseData) => {
+  //       const loadedIngredients = [];
+  //       for (const key in responseData) {
+  //         loadedIngredients.push({
+  //           id: key,
+  //           title: responseData[key].title,
+  //           amount: responseData[key].amount,
+  //         });
+  //       }
+  //      dispatch({type:"SET",ingredient:loadedIngredients})
+  //     });
+  // }, []);
 
   useEffect(() => {
     console.log("RENDERING INGREDIENTS", userIngredients);
   }, [userIngredients]);
 
-  const filterIngredientsHandler = useCallback(
-    (filterIngredients) => {
-      setUserIngredients(filterIngredients);
-      console.log({ filterIngredients });
-    },
-    [setUserIngredients]
-  );
+  const filterIngredientsHandler = useCallback((filteredIngredients) => {
+    /*  setUserIngredients(filterIngredients); */
+    dispatch({ type: "SET", ingredients: filteredIngredients });
+  }, []);
 
   console.log({ userIngredients });
   const addIngredientHandler = (ingredient) => {
@@ -49,10 +61,14 @@ const Ingredients = () => {
         return response.json();
       })
       .then((responseData) => {
-        setUserIngredients((prevIngredients) => [
+        /*  setUserIngredients((prevIngredients) => [
           ...prevIngredients,
           { id: responseData.name, ...ingredient },
-        ]);
+        ]); */
+        dispatch({
+          type: "ADD",
+          ingredient: { id: responseData.name, ...ingredient },
+        });
       });
   };
 
@@ -66,9 +82,10 @@ const Ingredients = () => {
     )
       .then((res) => {
         setIsLoading(false);
-        setUserIngredients((prevIngredients) =>
+        /*  setUserIngredients((prevIngredients) =>
           prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
-        );
+        ); */
+        dispatch({ type: "DELETE", id: ingredientId });
       })
       .catch((err) => {
         setErr("something err");
